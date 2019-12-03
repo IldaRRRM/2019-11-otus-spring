@@ -1,0 +1,21 @@
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>spring-01-ioc-xml</artifactId>
+    <version>2.0</version>
+    <packaging>jar</packaging>
+    <parent>
+        <groupId>ru.otus.homework</groupId>
+        <artifactId>2019-11-otus-spring-mursalimov</artifactId>
+        <version>2.0</version>
+    </parent>
+    <properties>
+        <opencsv.version>4.6</opencsv.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>${opencsv.version}</version>
+        </dependency>
+    </dependencies>
+</project>
