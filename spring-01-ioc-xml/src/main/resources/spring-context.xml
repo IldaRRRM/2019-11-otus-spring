@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="gradeHandleService" class="ru.otus.homework.service.impl.GradeHandlerServiceImpl">
+    </bean>
+    <bean id="csvReadFileService" class="ru.otus.homework.service.impl.CsvExamDataReadFileServiceImpl">
+        <constructor-arg value="data.csv"/>
+    </bean>
+
+    <bean id="answerHandlerService" class="ru.otus.homework.service.impl.AnswerHandlerServiceImpl"/>
+
+    <bean id="examService" class="ru.otus.homework.service.impl.ExamServiceImpl">
+        <constructor-arg name="answerHandlerService" ref="answerHandlerService"/>
+        <constructor-arg name="readFileService" ref="csvReadFileService"/>
+        <constructor-arg name="gradeHandlerService" ref="gradeHandleService"/>
+    </bean>
+
+</beans>
