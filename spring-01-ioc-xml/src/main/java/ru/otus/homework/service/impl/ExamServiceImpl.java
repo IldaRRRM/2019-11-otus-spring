@@ -28,7 +28,7 @@ public class ExamServiceImpl implements ExamService {
             String studentName = reader.readLine();
             log.info("Введите фамилию : ");
             String studentSecondName = reader.readLine();
-            List<CsvExamData> examData = (List<CsvExamData>) readFileService.read();
+            List<CsvExamData> examData = (List<CsvExamData>) readFileService.readFromInnerFields();
             int rightAnswer = 0;
             for (CsvExamData currentExamData : examData) {
                 log.info("Вопрос : {}", currentExamData.getQuestion());

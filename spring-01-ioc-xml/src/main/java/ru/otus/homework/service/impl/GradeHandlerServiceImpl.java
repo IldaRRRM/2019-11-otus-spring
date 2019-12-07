@@ -1,7 +1,9 @@
 package ru.otus.homework.service.impl;
 
+import org.springframework.stereotype.Service;
 import ru.otus.homework.service.GradeHandlerService;
 
+@Service
 public class GradeHandlerServiceImpl implements GradeHandlerService {
     @Override
     public String gradeHandle(Integer correctAnswers) {
@@ -15,6 +17,10 @@ public class GradeHandlerServiceImpl implements GradeHandlerService {
             default:
                 return "Неудв";
         }
+    }
 
+    @Override
+    public boolean gradeHandle(Integer correctAnswers, Integer examPassAnswersCount) {
+        return correctAnswers >= examPassAnswersCount;
     }
 }
