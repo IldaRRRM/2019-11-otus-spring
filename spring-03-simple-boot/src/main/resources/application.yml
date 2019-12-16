@@ -1,0 +1,6 @@
+exam:
+  pass:
+    answers:
+      count: 3
+  prom:
+    status: false
