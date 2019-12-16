@@ -8,5 +8,7 @@ import java.util.List;
 
 public interface ReadFileService {
 
-    List<? extends CsvExamData> read() throws IOException;
+    List<? extends CsvExamData> readFromInnerFields() throws IOException;
+
+    List<? extends CsvExamData> read(String pathToResource) throws IOException;
 }

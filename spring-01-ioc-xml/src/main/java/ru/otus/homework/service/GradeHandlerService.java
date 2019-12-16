@@ -4,4 +4,6 @@ public interface GradeHandlerService {
 
     String gradeHandle(Integer correctAnswers);
 
+    boolean gradeHandle(Integer correctAnswers, Integer examPassAnswersCount);
+
 }
