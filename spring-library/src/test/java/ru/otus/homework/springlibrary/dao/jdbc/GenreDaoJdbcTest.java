@@ -56,6 +56,6 @@ class GenreDaoJdbcTest {
     @Test
     @DisplayName("Поиск всех жанров по id книги (Id книги берется из иниц. тестового скрипта)")
     void getGenresByBookId() {
-        assertThat(genreDaoJdbc.getGenresByBookId(INITIAL_BOOK_ID).size()).isEqualTo(1);
+        assertThat(genreDaoJdbc.getGenresByBookId(INITIAL_BOOK_ID).size()).isEqualTo(2);
     }
 }

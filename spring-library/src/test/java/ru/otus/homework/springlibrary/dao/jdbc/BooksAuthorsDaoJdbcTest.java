@@ -7,6 +7,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.homework.springlibrary.domain.Book;
 
+import java.util.ArrayList;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -36,7 +38,7 @@ class BooksAuthorsDaoJdbcTest {
     @DisplayName("Получение книги по ее Id")
     @Test
     void shouldReturnBookById() {
-        Book expectedBook = new Book(BOOK_ID_FOR_TESTING, "findestBook", 2020);
+        Book expectedBook = new Book(BOOK_ID_FOR_TESTING, "findestBook", 2020, new ArrayList<>(), new ArrayList<>());
         bookDaoJdbc.insert(expectedBook);
         Book actualBook = bookDaoJdbc.getBookById(BOOK_ID_FOR_TESTING);
         assertThat(actualBook).isEqualTo(expectedBook);
@@ -46,7 +48,7 @@ class BooksAuthorsDaoJdbcTest {
     @DisplayName("Обновление добавленной книги в базу")
     @Test
     void shouldReturnUpdatedBook() {
-        Book expectedBook = new Book(BOOK_ID_FOR_TESTING, "beforeUpdate", 1970);
+        Book expectedBook = new Book(BOOK_ID_FOR_TESTING, "beforeUpdate", 1970, new ArrayList<>(), new ArrayList<>());
         bookDaoJdbc.insert(expectedBook);
         expectedBook.setName("afterUpdate");
         expectedBook.setReleaseYear(2020);

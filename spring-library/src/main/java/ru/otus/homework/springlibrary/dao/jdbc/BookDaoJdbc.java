@@ -5,7 +5,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.stereotype.Service;
 import ru.otus.homework.springlibrary.dao.BookDao;
 import ru.otus.homework.springlibrary.domain.Book;
-import ru.otus.homework.springlibrary.mapper.BookMapper;
+import ru.otus.homework.springlibrary.mapper.extractor.BookResultSetExtractor;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,7 +38,11 @@ public class BookDaoJdbc implements BookDao {
 
     @Override
     public List<Book> getAll() {
-        return jdbc.query("SELECT * FROM books", new BookMapper());
+        return jdbc.query("SELECT b.id bid, b.name bname, b.release_year , a.id aid, a.name aname, a.country, g.id gid, g.name gname FROM books AS b" +
+                " LEFT JOIN authors_books ab on b.id = ab.book_id " +
+                " LEFT JOIN authors a on ab.author_id = a.id" +
+                " LEFT JOIN books_genres bg on b.id = bg.book_id" +
+                " LEFT JOIN genres g on bg.genre_id = g.id", new BookResultSetExtractor());
     }
 
     @Override
@@ -60,6 +64,17 @@ public class BookDaoJdbc implements BookDao {
     @Override
     public Book getBookById(long bookId) {
         Map<String, Object> idMap = Collections.singletonMap("id", bookId);
-        return jdbc.queryForObject("SELECT * FROM books WHERE id = :id", idMap, new BookMapper());
+        List<Book> queryBooks = jdbc.query("SELECT b.id bid , b.name bname, b.release_year , a.id aid, a.name aname, a.country, g.id gid, g.name gname" +
+                " FROM books AS b " +
+                " LEFT JOIN authors_books ab on b.id = ab.book_id " +
+                " LEFT JOIN authors a on ab.author_id = a.id" +
+                " LEFT JOIN books_genres bg on b.id = bg.book_id" +
+                " LEFT JOIN genres g on bg.genre_id = g.id " +
+                "WHERE b.id = :id", idMap, new BookResultSetExtractor());
+        if (queryBooks != null && !queryBooks.isEmpty()) {
+            return queryBooks.get(0);
+        } else {
+            return null;
+        }
     }
 }
