@@ -1,22 +1,10 @@
 package ru.otus.homework.springlibrary.repositories;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 import ru.otus.homework.springlibrary.domain.Genre;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+@Repository
+public interface GenreRepository extends JpaRepository<Genre, Long> {
 
-public interface GenreRepository {
-
-    Long count();
-
-    List<Genre> getAllGenres();
-
-    void deleteGenreById(Long genreId);
-
-    Optional<Genre> getGenreById(Long genreId);
-
-    Genre save(Genre genre);
-
-    void updateGenreById(Long id, Map<String, String> updatedFields);
 }

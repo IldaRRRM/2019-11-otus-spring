@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.homework.springlibrary.domain.Book;
-import ru.otus.homework.springlibrary.repositories.BookRepository;
+import ru.otus.homework.springlibrary.service.BooksCrudService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,7 +18,7 @@ class BooksCrudCommandsTest {
     @Autowired
     private BooksCrudCommands booksCrudCommands;
     @Autowired
-    private BookRepository bookRepository;
+    private BooksCrudService bookService;
 
     @Test
     @DisplayName("Проверка методов getAll() и Count()")
@@ -30,7 +30,7 @@ class BooksCrudCommandsTest {
     @DisplayName("Добавление информации о новой книги в основные(books, genres, authors) и связующие таблицы")
     void shouldAddNewRecordToBooksAuthorsGenresAndLinkedTables() {
         Long addedBookId = booksCrudCommands.addNewBook("newTestingBook", 1984, new String[]{"Оруэлл"}, new String[]{"жизнь"});
-        assertThat(bookRepository.getBookById(addedBookId).orElseThrow().getName()).isEqualTo("newTestingBook");
+        assertThat(bookService.getBookById(addedBookId).getName()).isEqualTo("newTestingBook");
         booksCrudCommands.deleteBookById(addedBookId);
 
     }
@@ -50,6 +50,22 @@ class BooksCrudCommandsTest {
         assertThat(booksCrudCommands.getBookById(INITIAL_BOOK_ID).getGenres().stream().anyMatch(genre -> genre.getName().equals("новый жанр"))).isTrue();
         assertThat(booksCrudCommands.getBookById(INITIAL_BOOK_ID).getReleaseYear()).isEqualTo(1920);
         assertThat(booksCrudCommands.getBookById(INITIAL_BOOK_ID).getName()).isEqualTo("новое имя");
+    }
+
+    @Test
+    @DisplayName("Проверка просмотра комментариев книги по ее Id")
+    @Transactional
+    void shouldReturnAllCommentsOfBook() {
+        assertThat(booksCrudCommands.showCommentOfBook(INITIAL_BOOK_ID).get(0).getComment()).isEqualTo("норм книга");
+    }
+
+    @Test
+    @DisplayName("Проверка добавлении комментария к книге")
+    @Transactional
+    void shouldAddNewCommentToBook() {
+        int expectedCommentSize = booksCrudCommands.showCommentOfBook(INITIAL_BOOK_ID).size() + 1;
+        booksCrudCommands.addCommentToBook(INITIAL_BOOK_ID, "Новый комментарий");
+        assertThat(booksCrudCommands.showCommentOfBook(INITIAL_BOOK_ID).size()).isEqualTo(expectedCommentSize);
     }
 
 }
