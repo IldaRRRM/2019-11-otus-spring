@@ -9,4 +9,4 @@ spring:
       host: localhost
   shell:
     interactive:
-          enabled: true
+          enabled: false
