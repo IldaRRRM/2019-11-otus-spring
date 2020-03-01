@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -18,15 +19,15 @@ public class Book {
 
     @Id
     private String id;
-
+    @Setter
     private String name;
-
+    @Setter
     private Integer releaseYear;
-
+    @Setter
     private List<Author> authors;
-
+    @Setter
     private List<Genre> genres;
-
+    @Setter
     private List<Comment> comments;
 
     public Book(String id, String name, int releaseYear) {
@@ -48,26 +49,6 @@ public class Book {
                 "; bookName = " + getName() +
                 "; bookAuthors = " + getAuthors() +
                 "; genres of Book " + getGenres();
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setReleaseYear(Integer releaseYear) {
-        this.releaseYear = releaseYear;
-    }
-
-    public void setAuthors(List<Author> authors) {
-        this.authors = authors;
-    }
-
-    public void setGenres(List<Genre> genres) {
-        this.genres = genres;
-    }
-
-    public void setComments(List<Comment> comments) {
-        this.comments = comments;
     }
 }
 

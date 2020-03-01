@@ -143,7 +143,7 @@ public class BooksCrudServiceJpa implements BooksCrudService {
     private List<Author> addAuthorsToRep(List<Author> authors) {
         List<Author> authorsWithId = new ArrayList<>();
         for (Author currentAuthor : authors) {
-            Optional<Author> authorByNameAndCountry = authorRepository.findAuthorByName(currentAuthor.getName());
+            Optional<Author> authorByNameAndCountry = authorRepository.findAuthorByNameIgnoreName(currentAuthor.getName());
             Author addedAuthor = authorByNameAndCountry.orElseGet(() -> authorRepository.save(currentAuthor));
             authorsWithId.add(addedAuthor);
         }
@@ -153,7 +153,7 @@ public class BooksCrudServiceJpa implements BooksCrudService {
     private List<Genre> addGenreToRep(List<Genre> genres) {
         List<Genre> genresWithId = new ArrayList<>();
         for (Genre genre : genres) {
-            Optional<Genre> genreByName = genreRepository.findGenreByName(genre.getName());
+            Optional<Genre> genreByName = genreRepository.findGenreByNameIgnoreCase(genre.getName());
             Genre addedAuthor = genreByName.orElseGet(() -> genreRepository.save(genre));
             genresWithId.add(addedAuthor);
         }
