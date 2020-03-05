@@ -1,18 +1,12 @@
 spring:
-  datasource:
-    url: jdbc:h2:mem:testdb
-    initialization-mode: always
-    driver-class-name: org.h2.Driver
-    continue-on-error: true
-
-  jpa:
-    generate-ddl: false
-    hibernate:
-      ddl-auto: none
-
-
-    show-sql: true
-
+  data:
+    mongodb:
+      authentication-database: admin
+      username: myUserAdmin
+      password: root
+      database: library_db
+      port: 27017
+      host: localhost
   shell:
     interactive:
-      enabled: false
+          enabled: false

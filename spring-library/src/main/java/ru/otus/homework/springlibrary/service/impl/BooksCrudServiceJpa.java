@@ -2,19 +2,21 @@ package ru.otus.homework.springlibrary.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.homework.springlibrary.domain.Author;
 import ru.otus.homework.springlibrary.domain.Book;
 import ru.otus.homework.springlibrary.domain.Comment;
 import ru.otus.homework.springlibrary.domain.Genre;
+import ru.otus.homework.springlibrary.repositories.AuthorRepository;
 import ru.otus.homework.springlibrary.repositories.BookRepository;
+import ru.otus.homework.springlibrary.repositories.GenreRepository;
 import ru.otus.homework.springlibrary.service.BooksCrudService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,6 +25,8 @@ import java.util.stream.Collectors;
 public class BooksCrudServiceJpa implements BooksCrudService {
 
     private final BookRepository bookRepository;
+    private final AuthorRepository authorRepository;
+    private final GenreRepository genreRepository;
 
     @Override
     public Long getBooksCount() {
@@ -31,9 +35,9 @@ public class BooksCrudServiceJpa implements BooksCrudService {
 
     @Transactional
     @Override
-    public Long addNewBook(String name, Integer releaseYear, String[] authors, String[] genre) {
-        List<Author> booksAuthors = Arrays.stream(authors).map(Author::new).collect(Collectors.toList());
-        List<Genre> booksGenres = Arrays.stream(genre).map(Genre::new).collect(Collectors.toList());
+    public String addNewBook(String name, Integer releaseYear, String[] authors, String[] genre) {
+        List<Author> booksAuthors = addAuthorsToRep(Arrays.stream(authors).map(Author::new).collect(Collectors.toList()));
+        List<Genre> booksGenres = addGenreToRep(Arrays.stream(genre).map(Genre::new).collect(Collectors.toList()));
         Book savedBook = bookRepository.save(new Book(name, releaseYear, booksAuthors, booksGenres));
         return savedBook.getId();
     }
@@ -42,23 +46,18 @@ public class BooksCrudServiceJpa implements BooksCrudService {
     @Override
     public List<Book> getAllBooks() {
         log.info("Выполнение запроса на получение всех книг");
-        List<Book> books = bookRepository.findAll();
-        books.forEach(book -> {
-            Hibernate.initialize(book.getAuthors());
-            Hibernate.initialize(book.getGenres());
-        });
-        return books;
+        return bookRepository.findAll();
     }
 
     @Transactional
     @Override
-    public void deleteBookById(Long bookId) {
+    public void deleteBookById(String bookId) {
         bookRepository.deleteById(bookId);
     }
 
     @Transactional
     @Override
-    public void updateBook(Long id, String authorName, String bookName, String genreName, Integer releaseYear) {
+    public void updateBook(String id, String authorName, String bookName, String genreName, Integer releaseYear) {
         Book book = bookRepository.findById(id).orElseThrow();
 
         updateAuthorName(book, authorName)
@@ -71,17 +70,13 @@ public class BooksCrudServiceJpa implements BooksCrudService {
 
     @Transactional
     @Override
-    public Book getBookById(Long bookId) {
-        Book book = bookRepository.findById(bookId).orElseThrow(RuntimeException::new);
-        Hibernate.initialize(book.getAuthors());
-        Hibernate.initialize(book.getGenres());
-        Hibernate.initialize(book.getComments());
-        return book;
+    public Book getBookById(String bookId) {
+        return bookRepository.findById(bookId).orElseThrow(RuntimeException::new);
     }
 
     @Transactional
     @Override
-    public void addCommentToBook(Long bookId, String comment) {
+    public void addCommentToBook(String bookId, String comment) {
         Book book = bookRepository.findById(bookId).orElseThrow();
         if (book.getComments() != null) {
             book.getComments().add(new Comment(comment));
@@ -95,9 +90,8 @@ public class BooksCrudServiceJpa implements BooksCrudService {
 
     @Transactional
     @Override
-    public List<Comment> showComments(Long bookId) {
+    public List<Comment> showComments(String bookId) {
         Book book = bookRepository.findById(bookId).orElseThrow();
-        Hibernate.initialize(book.getComments());
         return book.getComments() != null ? book.getComments() : new ArrayList<>();
     }
 
@@ -144,5 +138,25 @@ public class BooksCrudServiceJpa implements BooksCrudService {
             book.setReleaseYear(releaseYear);
         }
         return this;
+    }
+
+    private List<Author> addAuthorsToRep(List<Author> authors) {
+        List<Author> authorsWithId = new ArrayList<>();
+        for (Author currentAuthor : authors) {
+            Optional<Author> authorByNameAndCountry = authorRepository.findAuthorByNameIgnoreName(currentAuthor.getName());
+            Author addedAuthor = authorByNameAndCountry.orElseGet(() -> authorRepository.save(currentAuthor));
+            authorsWithId.add(addedAuthor);
+        }
+        return authorsWithId;
+    }
+
+    private List<Genre> addGenreToRep(List<Genre> genres) {
+        List<Genre> genresWithId = new ArrayList<>();
+        for (Genre genre : genres) {
+            Optional<Genre> genreByName = genreRepository.findGenreByNameIgnoreCase(genre.getName());
+            Genre addedAuthor = genreByName.orElseGet(() -> genreRepository.save(genre));
+            genresWithId.add(addedAuthor);
+        }
+        return genresWithId;
     }
 }

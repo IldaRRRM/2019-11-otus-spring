@@ -9,18 +9,18 @@ public interface BooksCrudService {
 
     Long getBooksCount();
 
-    Long addNewBook(String name, Integer releaseYear, String[] authors, String[] genre);
+    String addNewBook(String name, Integer releaseYear, String[] authors, String[] genre);
 
     List<Book> getAllBooks();
 
-    void deleteBookById(Long bookId);
+    void deleteBookById(String bookId);
 
-    void updateBook(Long id, String authorName, String bookName, String genreName, Integer releaseYear);
+    void updateBook(String id, String authorName, String bookName, String genreName, Integer releaseYear);
 
-    Book getBookById(Long bookId);
+    Book getBookById(String bookId);
 
-    void addCommentToBook(Long bookId, String comment);
+    void addCommentToBook(String bookId, String comment);
 
-    List<Comment> showComments(Long bookId);
+    List<Comment> showComments(String bookId);
 }
 

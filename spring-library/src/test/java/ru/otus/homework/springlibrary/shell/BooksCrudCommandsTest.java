@@ -4,7 +4,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
 import ru.otus.homework.springlibrary.domain.Book;
 import ru.otus.homework.springlibrary.service.BooksCrudService;
 
@@ -12,8 +11,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 class BooksCrudCommandsTest {
-
-    private static final Long INITIAL_BOOK_ID = -1L;
 
     @Autowired
     private BooksCrudCommands booksCrudCommands;
@@ -29,7 +26,7 @@ class BooksCrudCommandsTest {
     @Test
     @DisplayName("Добавление информации о новой книги в основные(books, genres, authors) и связующие таблицы")
     void shouldAddNewRecordToBooksAuthorsGenresAndLinkedTables() {
-        Long addedBookId = booksCrudCommands.addNewBook("newTestingBook", 1984, new String[]{"Оруэлл"}, new String[]{"жизнь"});
+        String addedBookId = booksCrudCommands.addNewBook("newTestingBook", 1984, new String[]{"Оруэлл"}, new String[]{"жизнь"});
         assertThat(bookService.getBookById(addedBookId).getName()).isEqualTo("newTestingBook");
         booksCrudCommands.deleteBookById(addedBookId);
 
@@ -37,35 +34,37 @@ class BooksCrudCommandsTest {
 
     @Test
     @DisplayName("Проверка обновление книги")
-    @Transactional
     void shouldUpdateBook() {
 
-        Book beforeUpdatedBook = booksCrudCommands.getBookById(INITIAL_BOOK_ID);
+        String addedBookId = booksCrudCommands.addNewBook("newTestingBook", 1984, new String[]{"Оруэлл"}, new String[]{"жизнь"});
 
-        booksCrudCommands.getBookById(INITIAL_BOOK_ID);
+        Book beforeUpdatedBook = booksCrudCommands.getBookById(addedBookId);
 
-        booksCrudCommands.updateBook(INITIAL_BOOK_ID, "новый автор", "новое имя", "новый жанр", 1920);
+        booksCrudCommands.getBookById(addedBookId);
 
-        assertThat(booksCrudCommands.getBookById(INITIAL_BOOK_ID).getAuthors().stream().anyMatch(author -> author.getName().equals("новый автор"))).isTrue();
-        assertThat(booksCrudCommands.getBookById(INITIAL_BOOK_ID).getGenres().stream().anyMatch(genre -> genre.getName().equals("новый жанр"))).isTrue();
-        assertThat(booksCrudCommands.getBookById(INITIAL_BOOK_ID).getReleaseYear()).isEqualTo(1920);
-        assertThat(booksCrudCommands.getBookById(INITIAL_BOOK_ID).getName()).isEqualTo("новое имя");
+        booksCrudCommands.updateBook(addedBookId, "новый автор", "новое имя", "новый жанр", 1920);
+
+        assertThat(booksCrudCommands.getBookById(addedBookId).getAuthors().stream().anyMatch(author -> author.getName().equals("новый автор"))).isTrue();
+        assertThat(booksCrudCommands.getBookById(addedBookId).getGenres().stream().anyMatch(genre -> genre.getName().equals("новый жанр"))).isTrue();
+        assertThat(booksCrudCommands.getBookById(addedBookId).getReleaseYear()).isEqualTo(1920);
+        assertThat(booksCrudCommands.getBookById(addedBookId).getName()).isEqualTo("новое имя");
     }
 
     @Test
     @DisplayName("Проверка просмотра комментариев книги по ее Id")
-    @Transactional
     void shouldReturnAllCommentsOfBook() {
-        assertThat(booksCrudCommands.showCommentOfBook(INITIAL_BOOK_ID).get(0).getComment()).isEqualTo("норм книга");
+        String addedBookId = booksCrudCommands.addNewBook("BookWithComment", 1984, new String[]{"Оруэлл"}, new String[]{"жизнь"});
+        booksCrudCommands.addCommentToBook(addedBookId, "норм книга");
+        assertThat(booksCrudCommands.showCommentOfBook(addedBookId).get(0).getComment()).isEqualTo("норм книга");
     }
 
     @Test
     @DisplayName("Проверка добавлении комментария к книге")
-    @Transactional
     void shouldAddNewCommentToBook() {
-        int expectedCommentSize = booksCrudCommands.showCommentOfBook(INITIAL_BOOK_ID).size() + 1;
-        booksCrudCommands.addCommentToBook(INITIAL_BOOK_ID, "Новый комментарий");
-        assertThat(booksCrudCommands.showCommentOfBook(INITIAL_BOOK_ID).size()).isEqualTo(expectedCommentSize);
+        String addedBookId = booksCrudCommands.addNewBook("BookWithComment", 1984, new String[]{"Оруэлл"}, new String[]{"жизнь"});
+        int expectedCommentSize = booksCrudCommands.showCommentOfBook(addedBookId).size() + 1;
+        booksCrudCommands.addCommentToBook(addedBookId, "Новый комментарий");
+        assertThat(booksCrudCommands.showCommentOfBook(addedBookId).size()).isEqualTo(expectedCommentSize);
     }
 
 }

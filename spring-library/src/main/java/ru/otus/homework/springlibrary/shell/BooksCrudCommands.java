@@ -24,7 +24,7 @@ public class BooksCrudCommands {
     }
 
     @ShellMethod(value = "add a new Book", key = {"add a new Book", "insb"})
-    public Long addNewBook(@ShellOption String name, @ShellOption Integer releaseYear, @ShellOption String[] authors, @ShellOption String[] genre) {
+    public String addNewBook(@ShellOption String name, @ShellOption Integer releaseYear, @ShellOption String[] authors, @ShellOption String[] genre) {
         return booksCrudService.addNewBook(name, releaseYear, authors, genre);
     }
 
@@ -34,12 +34,12 @@ public class BooksCrudCommands {
     }
 
     @ShellMethod(value = "delete book by id", key = {"delete book by id", "did"})
-    public void deleteBookById(@ShellOption Long bookId) {
+    public void deleteBookById(@ShellOption String bookId) {
         booksCrudService.deleteBookById(bookId);
     }
 
     @ShellMethod(value = "update book", key = {"updbook, upb"})
-    public void updateBook(@ShellOption("--id") Long id,
+    public void updateBook(@ShellOption("--id") String id,
                            @ShellOption("--ar") String authorName,
                            @ShellOption("--bn") String bookName,
                            @ShellOption("--gr") String genreName,
@@ -48,18 +48,18 @@ public class BooksCrudCommands {
     }
 
     @ShellMethod(value = "get book by Id", key = {"get book by id", "gtb"})
-    public Book getBookById(@ShellOption Long bookId) {
+    public Book getBookById(@ShellOption String bookId) {
         return booksCrudService.getBookById(bookId);
     }
 
     @ShellMethod(value = "add comment to book", key = {"adcm"})
-    public void addCommentToBook(@ShellOption Long bookId, @ShellOption String comment) {
+    public void addCommentToBook(@ShellOption String bookId, @ShellOption String comment) {
         log.info("Добавление коммента к книге с id = {}", bookId);
         booksCrudService.addCommentToBook(bookId, comment);
     }
 
     @ShellMethod(value = "show bookComments", key = "shb")
-    public List<Comment> showCommentOfBook(@ShellOption Long bookId) {
+    public List<Comment> showCommentOfBook(@ShellOption String bookId) {
         return booksCrudService.showComments(bookId);
     }
 }
