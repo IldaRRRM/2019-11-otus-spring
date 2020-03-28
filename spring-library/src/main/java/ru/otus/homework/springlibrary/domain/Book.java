@@ -1,34 +1,33 @@
 package ru.otus.homework.springlibrary.domain;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-@Getter
 @Document(collection = "books")
+@Data
 public class Book {
 
     @Id
     private String id;
-    @Setter
     private String name;
-    @Setter
     private Integer releaseYear;
-    @Setter
-    private List<Author> authors;
-    @Setter
-    private List<Genre> genres;
-    @Setter
-    private List<Comment> comments;
+    @DBRef
+    private List<Author> authors = new ArrayList<>();
+    @DBRef
+    private List<Genre> genres = new ArrayList<>();
+    @DBRef
+    private List<Comment> comments = new ArrayList<>();
 
     public Book(String id, String name, int releaseYear) {
         this.id = id;

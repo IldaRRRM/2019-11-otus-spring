@@ -2,161 +2,104 @@ package ru.otus.homework.springlibrary.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import ru.otus.homework.springlibrary.domain.Author;
 import ru.otus.homework.springlibrary.domain.Book;
 import ru.otus.homework.springlibrary.domain.Comment;
 import ru.otus.homework.springlibrary.domain.Genre;
-import ru.otus.homework.springlibrary.repositories.AuthorRepository;
+import ru.otus.homework.springlibrary.dto.BookDto;
+import ru.otus.homework.springlibrary.dto.CommentDto;
 import ru.otus.homework.springlibrary.repositories.BookRepository;
-import ru.otus.homework.springlibrary.repositories.GenreRepository;
-import ru.otus.homework.springlibrary.service.BooksCrudService;
+import ru.otus.homework.springlibrary.service.BooksCrudReactiveService;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class BooksCrudServiceJpa implements BooksCrudService {
+public class BooksCrudServiceJpa implements BooksCrudReactiveService {
 
     private final BookRepository bookRepository;
-    private final AuthorRepository authorRepository;
-    private final GenreRepository genreRepository;
+    private final ModelMapper modelMapper;
 
     @Override
-    public Long getBooksCount() {
+    public Mono<Book> addNewBook(BookDto bookDto) {
+        Book book = modelMapper.map(bookDto, Book.class);
+        return bookRepository.save(book);
+    }
+
+    @Override
+    public Mono<Long> getBooksCount() {
         return bookRepository.count();
     }
 
-    @Transactional
     @Override
-    public String addNewBook(String name, Integer releaseYear, String[] authors, String[] genre) {
-        List<Author> booksAuthors = addAuthorsToRep(Arrays.stream(authors).map(Author::new).collect(Collectors.toList()));
-        List<Genre> booksGenres = addGenreToRep(Arrays.stream(genre).map(Genre::new).collect(Collectors.toList()));
-        Book savedBook = bookRepository.save(new Book(name, releaseYear, booksAuthors, booksGenres));
-        return savedBook.getId();
-    }
-
-    @Transactional
-    @Override
-    public List<Book> getAllBooks() {
+    public Flux<Book> getAllBooks() {
         log.info("Выполнение запроса на получение всех книг");
         return bookRepository.findAll();
     }
 
-    @Transactional
     @Override
-    public void deleteBookById(String bookId) {
-        bookRepository.deleteById(bookId);
+    public Mono<Void> deleteBookById(String bookId) {
+        return bookRepository.deleteById(bookId);
     }
 
-    @Transactional
     @Override
-    public void updateBook(String id, String authorName, String bookName, String genreName, Integer releaseYear) {
-        Book book = bookRepository.findById(id).orElseThrow();
-
-        updateAuthorName(book, authorName)
-                .updateBookName(book, bookName)
-                .updateGenre(book, genreName)
-                .updateReleaseYear(book, releaseYear);
-
-        bookRepository.save(book);
+    public Mono<Book> updateBook(BookDto bookDto) {
+        return bookRepository.findById(bookDto.getId())
+                .flatMap(book -> {
+                    updateBookFields(bookDto, book);
+                    return bookRepository.save(book);
+                });
     }
 
-    @Transactional
     @Override
-    public Book getBookById(String bookId) {
-        return bookRepository.findById(bookId).orElseThrow(RuntimeException::new);
+    public Mono<Book> getBookById(String bookId) {
+        return bookRepository.findById(bookId);
     }
 
-    @Transactional
     @Override
-    public void addCommentToBook(String bookId, String comment) {
-        Book book = bookRepository.findById(bookId).orElseThrow();
-        if (book.getComments() != null) {
-            book.getComments().add(new Comment(comment));
-        } else {
-            List<Comment> comments = new ArrayList<>();
-            comments.add(new Comment(comment));
-            book.setComments(comments);
-        }
-        bookRepository.save(book);
+    public Mono<Void> addCommentToBook(String bookId, CommentDto commentDto) {
+        return bookRepository.findById(bookId).flatMap(book -> {
+            book.getComments().add(modelMapper.map(commentDto, Comment.class));
+            return bookRepository.save(book);
+        }).thenEmpty(Mono.empty());
     }
 
-    @Transactional
     @Override
-    public List<Comment> showComments(String bookId) {
-        Book book = bookRepository.findById(bookId).orElseThrow();
-        return book.getComments() != null ? book.getComments() : new ArrayList<>();
+    public Flux<Comment> showComments(String bookId) {
+        return bookRepository.findById(bookId).map(Book::getComments).flatMapMany(Flux::fromIterable);
     }
 
-    private BooksCrudServiceJpa updateAuthorName(Book book, String authorName) {
-        if (authorName != null) {
-            if (book.getAuthors() != null) {
-                List<Author> authors = book.getAuthors();
-                if (authors.stream().noneMatch(author -> author.getName().equals(authorName))) {
-                    authors.add(new Author(authorName));
-                }
-            } else {
-                List<Author> authors = new ArrayList<>();
-                authors.add(new Author(authorName));
-                book.setAuthors(authors);
-            }
+    private void updateBookFields(BookDto bookDto, Book book) {
+        if (bookDto.getName() != null) {
+            book.setName(bookDto.getName());
         }
-        return this;
-    }
+        if (bookDto.getGenres() != null) {
+            List<Genre> updatedGenres = bookDto.getGenres().stream()
+                    .map(genreDto -> modelMapper.map(genreDto, Genre.class))
+                    .collect(Collectors.toList());
+            book.getGenres().addAll(updatedGenres);
+        }
+        if (bookDto.getAuthors() != null) {
+            List<Author> authorList = bookDto.getAuthors().stream()
+                    .map(authorDto -> modelMapper.map(authorDto, Author.class))
+                    .collect(Collectors.toList());
+            book.getAuthors().addAll(authorList);
+        }
+        if (bookDto.getComments() != null) {
+            List<Comment> comments = book.getComments().stream()
+                    .map(comment -> modelMapper.map(comment, Comment.class))
+                    .collect(Collectors.toList());
+            book.getComments().addAll(comments);
+        }
 
-    private BooksCrudServiceJpa updateBookName(Book book, String bookName) {
-        if (bookName != null) {
-            book.setName(bookName);
+        if (bookDto.getReleaseYear() != null) {
+            book.setReleaseYear(bookDto.getReleaseYear());
         }
-        return this;
-    }
-
-    private BooksCrudServiceJpa updateGenre(Book book, String genre) {
-        if (genre != null) {
-            if (book.getGenres() != null) {
-                if (book.getGenres().stream().noneMatch(currentGenre -> currentGenre.getName().equals(genre))) {
-                    book.getGenres().add(new Genre(genre));
-                }
-            } else {
-                List<Genre> genres = new ArrayList<>();
-                genres.add(new Genre(genre));
-                book.setGenres(genres);
-            }
-        }
-        return this;
-    }
-
-    private BooksCrudServiceJpa updateReleaseYear(Book book, Integer releaseYear) {
-        if (releaseYear != 0) {
-            book.setReleaseYear(releaseYear);
-        }
-        return this;
-    }
-
-    private List<Author> addAuthorsToRep(List<Author> authors) {
-        List<Author> authorsWithId = new ArrayList<>();
-        for (Author currentAuthor : authors) {
-            Optional<Author> authorByNameAndCountry = authorRepository.findAuthorByNameIgnoreName(currentAuthor.getName());
-            Author addedAuthor = authorByNameAndCountry.orElseGet(() -> authorRepository.save(currentAuthor));
-            authorsWithId.add(addedAuthor);
-        }
-        return authorsWithId;
-    }
-
-    private List<Genre> addGenreToRep(List<Genre> genres) {
-        List<Genre> genresWithId = new ArrayList<>();
-        for (Genre genre : genres) {
-            Optional<Genre> genreByName = genreRepository.findGenreByNameIgnoreCase(genre.getName());
-            Genre addedAuthor = genreByName.orElseGet(() -> genreRepository.save(genre));
-            genresWithId.add(addedAuthor);
-        }
-        return genresWithId;
     }
 }
