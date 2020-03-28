@@ -12,14 +12,14 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 class AuthorRepositoryTest {
 
     @Autowired
-    AuthorRepository authorRepository;
+    private AuthorRepository authorRepository;
 
     @Test
     @DisplayName("Проверка поиска автора по имени")
     void shouldReturnSavedBeforeAuthorByName() {
         Author expectedAuthor = new Author("Akunin");
         authorRepository.save(expectedAuthor);
-        Author boris = authorRepository.findAuthorByNameIgnoreName("akunin").orElseThrow();
+        Author boris = authorRepository.findAuthorByNameIgnoreCase("akunin").orElseThrow();
         assertThat(boris).isEqualTo(expectedAuthor);
         authorRepository.delete(boris);
     }

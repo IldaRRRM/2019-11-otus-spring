@@ -3,7 +3,8 @@ package ru.otus.homework.springlibrary.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import ru.otus.homework.springlibrary.domain.Author;
 import ru.otus.homework.springlibrary.domain.Book;
 import ru.otus.homework.springlibrary.domain.Comment;
@@ -11,7 +12,7 @@ import ru.otus.homework.springlibrary.domain.Genre;
 import ru.otus.homework.springlibrary.repositories.AuthorRepository;
 import ru.otus.homework.springlibrary.repositories.BookRepository;
 import ru.otus.homework.springlibrary.repositories.GenreRepository;
-import ru.otus.homework.springlibrary.service.BooksCrudService;
+import ru.otus.homework.springlibrary.service.BooksCrudReactiveService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,77 +23,74 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class BooksCrudServiceJpa implements BooksCrudService {
+public class BooksCrudServiceJpa implements BooksCrudReactiveService {
 
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
     private final GenreRepository genreRepository;
 
     @Override
-    public Long getBooksCount() {
+    public Mono<Book> addNewBook(String name, Integer releaseYear, String[] authors, String[] genre) {
+        List<Author> booksAuthors = addAuthorsToRep(Arrays.stream(authors).map(Author::new).collect(Collectors.toList()));
+        List<Genre> booksGenres = addGenreToRep(Arrays.stream(genre).map(Genre::new).collect(Collectors.toList()));
+        return bookRepository.save(new Book(name, releaseYear, booksAuthors, booksGenres));
+    }
+
+    @Override
+    public Mono<Long> getBooksCount() {
         return bookRepository.count();
     }
 
-    @Transactional
     @Override
-    public String addNewBook(String name, Integer releaseYear, String[] authors, String[] genre) {
-        List<Author> booksAuthors = addAuthorsToRep(Arrays.stream(authors).map(Author::new).collect(Collectors.toList()));
-        List<Genre> booksGenres = addGenreToRep(Arrays.stream(genre).map(Genre::new).collect(Collectors.toList()));
-        Book savedBook = bookRepository.save(new Book(name, releaseYear, booksAuthors, booksGenres));
-        return savedBook.getId();
-    }
-
-    @Transactional
-    @Override
-    public List<Book> getAllBooks() {
+    public Flux<Book> getAllBooks() {
         log.info("Выполнение запроса на получение всех книг");
         return bookRepository.findAll();
     }
 
-    @Transactional
     @Override
-    public void deleteBookById(String bookId) {
-        bookRepository.deleteById(bookId);
+    public Mono<Void> deleteBookById(String bookId) {
+        return bookRepository.deleteById(bookId);
     }
 
-    @Transactional
     @Override
-    public void updateBook(String id, String authorName, String bookName, String genreName, Integer releaseYear) {
-        Book book = bookRepository.findById(id).orElseThrow();
-
-        updateAuthorName(book, authorName)
-                .updateBookName(book, bookName)
-                .updateGenre(book, genreName)
-                .updateReleaseYear(book, releaseYear);
-
-        bookRepository.save(book);
-    }
-
-    @Transactional
-    @Override
-    public Book getBookById(String bookId) {
-        return bookRepository.findById(bookId).orElseThrow(RuntimeException::new);
-    }
-
-    @Transactional
-    @Override
-    public void addCommentToBook(String bookId, String comment) {
-        Book book = bookRepository.findById(bookId).orElseThrow();
-        if (book.getComments() != null) {
-            book.getComments().add(new Comment(comment));
-        } else {
-            List<Comment> comments = new ArrayList<>();
-            comments.add(new Comment(comment));
-            book.setComments(comments);
+    public Mono<Void> updateBook(String id, String authorName, String bookName, String genreName, Integer releaseYear) {
+        Book book = bookRepository.findById(id).block();
+        if (book != null) {
+            updateAuthorName(book, authorName)
+                    .updateBookName(book, bookName)
+                    .updateGenre(book, genreName)
+                    .updateReleaseYear(book, releaseYear);
+            bookRepository.save(book);
         }
-        bookRepository.save(book);
+        return Mono.empty();
     }
 
-    @Transactional
     @Override
-    public List<Comment> showComments(String bookId) {
-        Book book = bookRepository.findById(bookId).orElseThrow();
-        return book.getComments() != null ? book.getComments() : new ArrayList<>();
+    public Mono<Book> getBookById(String bookId) {
+        return bookRepository.findById(bookId);
+    }
+
+    @Override
+    public Mono<Void> addCommentToBook(String bookId, String comment) {
+        bookRepository.findById(bookId);
+//        if (book.getComments() != null) {
+//            book.getComments().add(new Comment(comment));
+//        } else {
+//            List<Comment> comments = new ArrayList<>();
+//            comments.add(new Comment(comment));
+//            book.setComments(comments);
+//        }
+//        bookRepository.save(book);
+        return Mono.empty();
+    }
+
+    @Override
+    public Flux<Comment> showComments(String bookId) {
+//        Book book = bookRepository.findById(bookId).block();
+//        if (book != null) {
+//            return book.getComments() != null ? Flux.create(book.getComments()) : Flux.empty();
+//        }
+        return Flux.empty();
     }
 
     private BooksCrudServiceJpa updateAuthorName(Book book, String authorName) {
@@ -143,9 +141,9 @@ public class BooksCrudServiceJpa implements BooksCrudService {
     private List<Author> addAuthorsToRep(List<Author> authors) {
         List<Author> authorsWithId = new ArrayList<>();
         for (Author currentAuthor : authors) {
-            Optional<Author> authorByNameAndCountry = authorRepository.findAuthorByNameIgnoreName(currentAuthor.getName());
-            Author addedAuthor = authorByNameAndCountry.orElseGet(() -> authorRepository.save(currentAuthor));
-            authorsWithId.add(addedAuthor);
+            Optional<Author> authorByNameAndCountry = authorRepository.findAuthorByNameIgnoreCase(currentAuthor.getName());
+//            Author addedAuthor = authorByNameAndCountry.orElseGet(() -> authorRepository.save(currentAuthor));
+//            authorsWithId.add(addedAuthor);
         }
         return authorsWithId;
     }
@@ -154,8 +152,8 @@ public class BooksCrudServiceJpa implements BooksCrudService {
         List<Genre> genresWithId = new ArrayList<>();
         for (Genre genre : genres) {
             Optional<Genre> genreByName = genreRepository.findGenreByNameIgnoreCase(genre.getName());
-            Genre addedAuthor = genreByName.orElseGet(() -> genreRepository.save(genre));
-            genresWithId.add(addedAuthor);
+//            Genre addedAuthor = genreByName.orElseGet(() -> genreRepository.save(genre));
+//            genresWithId.add(addedAuthor);
         }
         return genresWithId;
     }

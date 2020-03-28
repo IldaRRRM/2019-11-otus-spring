@@ -7,6 +7,3 @@ spring:
       database: library_db
       port: 27017
       host: localhost
-  shell:
-    interactive:
-          enabled: false
