@@ -5,6 +5,7 @@ import reactor.core.publisher.Mono;
 import ru.otus.homework.springlibrary.domain.Book;
 import ru.otus.homework.springlibrary.domain.Comment;
 import ru.otus.homework.springlibrary.dto.BookDto;
+import ru.otus.homework.springlibrary.dto.CommentDto;
 
 public interface BooksCrudReactiveService {
 
@@ -20,8 +21,7 @@ public interface BooksCrudReactiveService {
 
     Mono<Book> getBookById(String bookId);
 
-    Mono<Void> addCommentToBook(String bookId, String comment);
+    Mono<Void> addCommentToBook(String bookId, CommentDto comment);
 
     Flux<Comment> showComments(String bookId);
-
 }

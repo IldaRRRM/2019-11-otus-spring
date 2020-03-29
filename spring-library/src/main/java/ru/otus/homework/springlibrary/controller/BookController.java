@@ -5,13 +5,20 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.otus.homework.springlibrary.domain.Book;
+import ru.otus.homework.springlibrary.domain.Comment;
 import ru.otus.homework.springlibrary.dto.BookDto;
+import ru.otus.homework.springlibrary.dto.CommentDto;
 import ru.otus.homework.springlibrary.service.BooksCrudReactiveService;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/books")
 public class BookController {
+
+    @GetMapping
+    public Flux<Book> getAllBooks() {
+        return booksCrudService.getAllBooks();
+    }
 
     private final BooksCrudReactiveService booksCrudService;
 
@@ -40,9 +47,14 @@ public class BookController {
         return booksCrudService.deleteBookById(id);
     }
 
-    @GetMapping
-    public Flux<Book> getAllBooks() {
-        return booksCrudService.getAllBooks();
+    @GetMapping("/{id}/comments")
+    public Flux<Comment> showBooksComments(@PathVariable String id) {
+        return booksCrudService.showComments(id);
+    }
+
+    @PostMapping("/{id}/comments/add")
+    public Mono<Void> addCommentToBook(@PathVariable String id, @RequestBody CommentDto commentDto) {
+        return booksCrudService.addCommentToBook(id, commentDto);
     }
 
 }

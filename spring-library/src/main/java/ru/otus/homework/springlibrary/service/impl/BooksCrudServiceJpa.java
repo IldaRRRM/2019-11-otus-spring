@@ -11,6 +11,7 @@ import ru.otus.homework.springlibrary.domain.Book;
 import ru.otus.homework.springlibrary.domain.Comment;
 import ru.otus.homework.springlibrary.domain.Genre;
 import ru.otus.homework.springlibrary.dto.BookDto;
+import ru.otus.homework.springlibrary.dto.CommentDto;
 import ru.otus.homework.springlibrary.repositories.BookRepository;
 import ru.otus.homework.springlibrary.service.BooksCrudReactiveService;
 
@@ -62,9 +63,9 @@ public class BooksCrudServiceJpa implements BooksCrudReactiveService {
     }
 
     @Override
-    public Mono<Void> addCommentToBook(String bookId, String comment) {
+    public Mono<Void> addCommentToBook(String bookId, CommentDto commentDto) {
         return bookRepository.findById(bookId).flatMap(book -> {
-            book.getComments().add(new Comment(comment));
+            book.getComments().add(modelMapper.map(commentDto, Comment.class));
             return bookRepository.save(book);
         }).thenEmpty(Mono.empty());
     }
