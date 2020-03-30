@@ -80,15 +80,21 @@ public class BooksCrudServiceJpa implements BooksCrudReactiveService {
             book.setName(bookDto.getName());
         }
         if (bookDto.getGenres() != null) {
-            List<Genre> updatedGenres = bookDto.getGenres().stream().map(genreDto -> modelMapper.map(genreDto, Genre.class)).collect(Collectors.toList());
+            List<Genre> updatedGenres = bookDto.getGenres().stream()
+                    .map(genreDto -> modelMapper.map(genreDto, Genre.class))
+                    .collect(Collectors.toList());
             book.getGenres().addAll(updatedGenres);
         }
         if (bookDto.getAuthors() != null) {
-            List<Author> authorList = bookDto.getAuthors().stream().map(authorDto -> modelMapper.map(authorDto, Author.class)).collect(Collectors.toList());
+            List<Author> authorList = bookDto.getAuthors().stream()
+                    .map(authorDto -> modelMapper.map(authorDto, Author.class))
+                    .collect(Collectors.toList());
             book.getAuthors().addAll(authorList);
         }
         if (bookDto.getComments() != null) {
-            List<Comment> comments = book.getComments().stream().map(comment -> modelMapper.map(comment, Comment.class)).collect(Collectors.toList());
+            List<Comment> comments = book.getComments().stream()
+                    .map(comment -> modelMapper.map(comment, Comment.class))
+                    .collect(Collectors.toList());
             book.getComments().addAll(comments);
         }
 

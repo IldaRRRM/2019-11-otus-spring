@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface GenreRepository extends ReactiveMongoRepository<Genre, String> {
-
+    //TODO ПОфиксить
     @Query(value = "{'name': {$regex : ?0, $options: 'i'}}")
     Optional<Genre> findGenreByNameIgnoreCase(String name);
 }
