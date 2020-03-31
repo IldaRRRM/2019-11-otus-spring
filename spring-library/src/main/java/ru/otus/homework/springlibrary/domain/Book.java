@@ -1,59 +1,35 @@
 package ru.otus.homework.springlibrary.domain;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import java.util.ArrayList;
 import java.util.List;
 
-@AllArgsConstructor
-@Getter
-@Setter
 @NoArgsConstructor
-@Entity
-@Table(name = "books")
+@AllArgsConstructor
+@EqualsAndHashCode
+@Document(collection = "books")
+@Data
 public class Book {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "name")
+    private String id;
     private String name;
-
-    @Column(name = "releaseYear")
     private Integer releaseYear;
+    @DBRef
+    private List<Author> authors = new ArrayList<>();
+    @DBRef
+    private List<Genre> genres = new ArrayList<>();
+    @DBRef
+    private List<Comment> comments = new ArrayList<>();
 
-    @ManyToMany(targetEntity = Author.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinTable(name = "authors_books",
-            joinColumns = @JoinColumn(name = "book_id"),
-            inverseJoinColumns = @JoinColumn(name = "author_id"))
-    private List<Author> authors;
-
-    @ManyToMany(targetEntity = Genre.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinTable(name = "books_genres",
-            joinColumns = @JoinColumn(name = "book_id"),
-            inverseJoinColumns = @JoinColumn(name = "genre_id"))
-    private List<Genre> genres;
-
-    @OneToMany(targetEntity = Comment.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "book_id")
-    private List<Comment> comments;
-
-    public Book(long id, String name, int releaseYear) {
+    public Book(String id, String name, int releaseYear) {
         this.id = id;
         this.name = name;
         this.releaseYear = releaseYear;
@@ -74,3 +50,5 @@ public class Book {
                 "; genres of Book " + getGenres();
     }
 }
+
+

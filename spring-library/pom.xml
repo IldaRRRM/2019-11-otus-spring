@@ -12,7 +12,7 @@
     <artifactId>spring-library</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>spring-library</name>
-    <description>Srping library</description>
+    <description>Spring library</description>
 
     <properties>
         <java.version>11</java.version>
@@ -20,6 +20,8 @@
         <postgresql.version>42.2.9</postgresql.version>
         <junit-jupiter.version>5.5.2</junit-jupiter.version>
         <h2.version>1.4.200</h2.version>
+        <spring-boot-starter-data-mongodb.version>2.1.7.RELEASE</spring-boot-starter-data-mongodb.version>
+        <modelmapper.version>2.3.5</modelmapper.version>
     </properties>
 
     <dependencies>
@@ -27,33 +29,44 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+            <version>${modelmapper.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
-        <!--SHELL-->
+        <!-- Зависимости WebFlux -->
         <dependency>
-            <groupId>org.springframework.shell</groupId>
-            <artifactId>spring-shell-starter</artifactId>
-            <version>${spirng.shell.version}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+        <!-- Зависимости Reactive SpringData -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-mongodb-reactive</artifactId>
         </dependency>
         <!--DB-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>runtime</scope>
-            <version>${h2.version}</version>
+            <artifactId>spring-boot-starter-data-mongodb</artifactId>
+            <version>${spring-boot-starter-data-mongodb.version}</version>
         </dependency>
         <!--TEST-->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
